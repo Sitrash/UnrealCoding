@@ -8,13 +8,11 @@
 #include "GameFramework/InputSettings.h"
 #include "Kismet/GamePlayStatics.h"
 #include "GameFramework/CharacterMovementComponent.h"
-#include "Components/HealthComponent.h"
+#include "NiceImmersive/Components/HealthComponent.h"
 #include "Components/TextRenderComponent.h"
-#include "Components/WeaponComponent.h"
-#include "Engine/EngineTypes.h"
-#include "Inventory/InventoryComponent.h"
-#include "Inventory/InventoryUI/InventoryWidget.h"
-#include "Interactable/ChestInteract.h"
+#include "NiceImmersive/Components/WeaponComponent.h"
+#include "NiceImmersive/Components/ActionComponent.h"
+#include "NiceImmersive/Inventory/InventoryComponent.h"
 #include "Sound/SoundCue.h"
 
 DEFINE_LOG_CATEGORY_STATIC(LogFPChar, Warning, All);
@@ -50,6 +48,7 @@ ANiceImmersiveCharacter::ANiceImmersiveCharacter(const FObjectInitializer& ObjIn
     HealthComponent = CreateDefaultSubobject<UHealthComponent>("Health Component");
     WeaponComponent = CreateDefaultSubobject<UWeaponComponent>("Weapon Component");
     InventoryComponent = CreateDefaultSubobject<UInventoryComponent>("InventoryComponent");
+    ActionComponent = CreateDefaultSubobject<UActionComponent>("ActionComponent");
 }
 
 void ANiceImmersiveCharacter::BeginPlay()
@@ -62,7 +61,7 @@ void ANiceImmersiveCharacter::BeginPlay()
 
     LandedDelegate.AddDynamic(this, &ANiceImmersiveCharacter::OnGroundLanded);
 
-    Widget = CreateWidget<UInventoryWidget>(GetController<APlayerController>(), InventoryWidget);
+    CharController = GetController<APlayerController>();
 }
 
 void ANiceImmersiveCharacter::Tick(float DeltaTime)
@@ -94,9 +93,10 @@ void ANiceImmersiveCharacter::SetupPlayerInputComponent(class UInputComponent* P
     PlayerInputComponent->BindAction("NextWeapon", IE_Pressed, WeaponComponent, &UWeaponComponent::NextWeapon);
     PlayerInputComponent->BindAction("UnEquip", IE_Pressed, WeaponComponent, &UWeaponComponent::UnEquip);
 
-    PlayerInputComponent->BindAction("Fire", IE_Pressed, this, &ANiceImmersiveCharacter::OnFire);
-    PlayerInputComponent->BindAction("Action", IE_Pressed, this, &ANiceImmersiveCharacter::OnAction);
-    PlayerInputComponent->BindAction("ToggleInventory", IE_Pressed, this, &ANiceImmersiveCharacter::OnInventoryShow).bExecuteWhenPaused = true;
+    PlayerInputComponent->BindAction("Fire", IE_Pressed, ActionComponent, &UActionComponent::OnFire);
+    PlayerInputComponent->BindAction("Action", IE_Pressed, ActionComponent, &UActionComponent::OnAction);
+    PlayerInputComponent->BindAction("ToggleInventory", IE_Pressed, ActionComponent, &UActionComponent::OnInventoryShow)
+        .bExecuteWhenPaused = true;
 
     // is for devices that we choose to treat as a rate of change, such as an analog joystick
     PlayerInputComponent->BindAxis("TurnRate", this, &ANiceImmersiveCharacter::TurnAtRate);
@@ -109,6 +109,8 @@ void ANiceImmersiveCharacter::MoveForward(float Value)
     if (Value != 0.0f)
     {
         AddMovementInput(GetActorForwardVector(), Value);
+        if (!CharController) return;
+        CharController->PlayerCameraManager->StartCameraShake(WalkCameraShake);
     }
 }
 void ANiceImmersiveCharacter::MoveRight(float Value)
@@ -116,6 +118,8 @@ void ANiceImmersiveCharacter::MoveRight(float Value)
     if (Value != 0.0f)
     {
         AddMovementInput(GetActorRightVector(), Value);
+        if (!CharController) return;
+        CharController->PlayerCameraManager->StartCameraShake(WalkCameraShake);
     }
 }
 void ANiceImmersiveCharacter::TurnAtRate(float Rate)
@@ -131,9 +135,18 @@ void ANiceImmersiveCharacter::Crouched()
 {
     if (GetCharacterMovement()->IsFalling()) return;
 
+    FVector FPSCameraDefault =
+        FVector(GetFirstPersonCamera()->GetRelativeLocation().X, GetFirstPersonCamera()->GetRelativeLocation().Y, 64.0f);
+
     if (!IsCrouch)
     {
-        GetCapsuleComponent()->SetCapsuleHalfHeight(33.0f, false);
+        GetCapsuleComponent()->SetCapsuleHalfHeight(33.0f, true);
+        //SpringArm->bEnableCameraLag = true;
+        //SpringArm->CameraLagSpeed = 10.0f;
+        FVector FPSCameraDesire = FVector(GetFirstPersonCamera()->GetRelativeLocation().X, GetFirstPersonCamera()->GetRelativeLocation().Y,
+            GetFirstPersonCamera()->GetRelativeLocation().Z - 33.0f);
+
+        GetFirstPersonCamera()->SetRelativeLocation(FPSCameraDesire);
         IsCrouch = true;
         GetCharacterMovement()->MaxWalkSpeed = 400.0f;
     }
@@ -149,7 +162,8 @@ void ANiceImmersiveCharacter::Crouched()
                 return;
             }
         }
-        GetCapsuleComponent()->SetCapsuleHalfHeight(96.0f, false);
+        GetCapsuleComponent()->SetCapsuleHalfHeight(96.0f, true);
+        GetFirstPersonCamera()->SetRelativeLocation(FPSCameraDefault);
         IsCrouch = false;
         GetCharacterMovement()->MaxWalkSpeed = 600.0f;
     }
@@ -170,23 +184,6 @@ void ANiceImmersiveCharacter::SprintEnd()
     GetCharacterMovement()->MaxWalkSpeed = 600.0f;
 }
 
-void ANiceImmersiveCharacter::OnAction()
-{
-    if (Interface) Interface->InteractWithMe(this);
-}
-
-void ANiceImmersiveCharacter::OnFire()
-{
-    if (bHolding)
-    {
-        CanThrow = true;
-        Interface->InteractWithMe(this);
-    }
-}
-
-//TArray<TEnumAsByte<EObjectTypeQuery>> ObjectTypes;
-//ObjectTypes.Add(UEngineTypes::ConvertToObjectType(ECollisionChannel::ECC_PhysicsBody));
-
 void ANiceImmersiveCharacter::OnDeath()
 {
     GetCharacterMovement()->DisableMovement();
@@ -203,12 +200,10 @@ void ANiceImmersiveCharacter::OnDeath()
 
     UGameplayStatics::PlaySoundAtLocation(GetWorld(), DeathSound, GetActorLocation());
 }
-
 void ANiceImmersiveCharacter::OnHealthChanged(float Health, float HealthDelta)
 {
     HealthTextComponent->SetText(FText::FromString(FString::Printf(TEXT("%.0f"), Health)));
 }
-
 void ANiceImmersiveCharacter::OnGroundLanded(const FHitResult& Hit2)
 {
     const auto FallVecocityZ = -GetCharacterMovement()->Velocity.Z;
@@ -225,23 +220,6 @@ void ANiceImmersiveCharacter::SetPlayerColor(const FLinearColor& Color)
     if (!MaterialInst) return;
 
     MaterialInst->SetVectorParameterValue(MaterialColorName, Color);
-}
-
-void ANiceImmersiveCharacter::SubFuncForHolding(AActor* HoldingActor, bool IsHolding)
-{
-    bHolding = IsHolding;
-    if (!bHolding)
-    {
-        WeaponComponent->CharacterGrabActor = nullptr;
-        WeaponComponent->IsEquip() ? WeaponComponent->EquipWeapon(WeaponComponent->GetCurrentWeaponIndex()) : nullptr;
-        GetCharacterMovement()->MaxWalkSpeed = 600.0f;
-    }
-    else
-    {
-        WeaponComponent->CharacterGrabActor = HoldingActor;
-        WeaponComponent->UnEquipForDrop();
-        GetCharacterMovement()->MaxWalkSpeed = 400.0f;
-    }
 }
 
 float ANiceImmersiveCharacter::GetMovementDirection() const
@@ -269,44 +247,14 @@ void ANiceImmersiveCharacter::InteractionOverlapping()
         return;
     }
 
-    AActor* ClosestActor = OverlappingActors[0];
+    auto& ClosestActor = OverlappingActors[0];
 
-    for (auto CurrentActor : OverlappingActors)
+    for (const auto& CurrentActor : OverlappingActors)
     {
-        if (GetDistanceTo(CurrentActor) < GetDistanceTo(ClosestActor))
-        {
-            ClosestActor = CurrentActor;
-        }
+        if (GetDistanceTo(CurrentActor) < GetDistanceTo(ClosestActor)) ClosestActor = CurrentActor;
     }
 
-    if (Interface)
-    {
-        Interface->HideInteractionWidget();
-    }
-
+    if (Interface) Interface->HideInteractionWidget();
     Interface = Cast<IInteractionInterface>(ClosestActor);
-
-    if (Interface)
-    {
-        Interface->ShowInteractionWidget();
-    }
-}
-
-void ANiceImmersiveCharacter::OnInventoryShow()
-{
-    if (!CanOpenInventory) return;
-    const auto Ctrl = GetController<APlayerController>();
-
-    if (!IsShowingInventory)
-    {
-        Ctrl->SetMouseLocation(XCoord, YCoord);
-        Widget->AddToViewport();
-        IsShowingInventory = true;
-    }
-    else
-    {
-        Ctrl->GetMousePosition(XCoord, YCoord);
-        Widget->CloseInventory();
-        IsShowingInventory = false;
-    }
+    if (Interface) Interface->ShowInteractionWidget();
 }

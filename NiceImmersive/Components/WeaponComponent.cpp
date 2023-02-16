@@ -147,8 +147,8 @@ void UWeaponComponent::StartFire()
         else
         {
             CurrentWeapon->StartFire();
-            const auto LauncherWeapon = Cast<ALauncherWeapon>(CurrentWeapon);
-            if (!LauncherWeapon && !CurrentWeapon->IsAmmoEmpty()) PlayAnimMontage(FireAnimMontage);
+            //const auto LauncherWeapon = Cast<ALauncherWeapon>(CurrentWeapon);
+            //if (!LauncherWeapon && !CurrentWeapon->IsAmmoEmpty()) PlayAnimMontage(FireAnimMontage);
         }
     }
 }
@@ -157,7 +157,7 @@ void UWeaponComponent::StopFire()
 {
     if (!CurrentWeapon) return;
     CurrentWeapon->StopFire();
-    StopAnimMontage(FireAnimMontage);
+    //StopAnimMontage(FireAnimMontage);
 }
 
 void UWeaponComponent::NextWeapon()

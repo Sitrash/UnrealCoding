@@ -4,8 +4,8 @@
 #include "Components/Button.h"
 #include "Components/Image.h"
 #include "Components/TextBlock.h"
-#include "Inventory/Items/Item.h"
-#include "Inventory/Items/AmmoItem.h"
+#include "NiceImmersive/Inventory/Items/Item.h"
+#include "NiceImmersive/Inventory/Items/AmmoItem.h"
 #include "Components/CanvasPanel.h"
 #include "Blueprint/WidgetBlueprintLibrary.h"
 
@@ -58,4 +58,10 @@ void UInventoryItemWidget::NativeDestruct()
     UWidgetBlueprintLibrary::SetFocusToGameViewport();
 
     Super::NativeDestruct();
+}
+
+void UInventoryItemWidget::NativeOnMouseLeave(const FPointerEvent& InMouseEvent)
+{
+    Super::NativeOnMouseLeave(InMouseEvent);
+    UsesButtonsCanvas->SetVisibility(ESlateVisibility::Collapsed);
 }

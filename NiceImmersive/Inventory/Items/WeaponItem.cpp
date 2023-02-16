@@ -3,7 +3,7 @@
 #include "Inventory/Items/WeaponItem.h"
 #include "Inventory/InventoryComponent.h"
 #include "Components/WeaponComponent.h"
-#include "GameFramework/Character.h"
+
 
 void UWeaponItem::Use()
 {

@@ -58,6 +58,9 @@ protected:
     UPROPERTY(EditAnywhere, Category = "Weapon")
     TArray<FWeaponData> WeaponData;
 
+    UPROPERTY()
+    TArray<ABaseWeapon*> Weapons;
+
     UPROPERTY(EditAnywhere, Category = "Weapon")
     FName WeaponEquipSocketName = "WeaponSocket";
 
@@ -69,9 +72,6 @@ protected:
 
     UPROPERTY(EditAnywhere, Category = "Animation")
     UAnimMontage* FireAnimMontage;
-
-    UPROPERTY()
-    TArray<ABaseWeapon*> Weapons;
 
     bool HoldingWeapon;
 
@@ -85,10 +85,8 @@ private:
 
     bool Equip = false;
 
-    void SpawnWeapons();
     void InitAnimations();
-
-    void AttachWeaponToSocket(ABaseWeapon* Weapon, USceneComponent* SceneComponent, const FName& SocketName);
+    void SpawnWeapons();
 
     void PlayAnimMontage(UAnimMontage* Animation);
     void StopAnimMontage(UAnimMontage* Animation);
@@ -97,6 +95,8 @@ private:
     void OnReloadFinished(USkeletalMeshComponent* MeshComp);
 
     bool CanReload() const;
+
+    void AttachWeaponToSocket(ABaseWeapon* Weapon, USceneComponent* SceneComponent, const FName& SocketName);
 
     void OnEmptyClip(ABaseWeapon* AmmoEmptyWeapon);
     void ChangeClip();

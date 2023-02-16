@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Item.h"
+#include "NiceImmersive/CoreTypes.h"
 #include "WeaponItem.generated.h"
 
 class ABaseWeapon;

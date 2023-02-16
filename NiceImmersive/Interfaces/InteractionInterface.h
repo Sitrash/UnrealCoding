@@ -7,6 +7,7 @@
 #include "InteractionInterface.generated.h"
 
 class ANiceImmersiveCharacter;
+class APlayerController;
 
 UINTERFACE(MinimalAPI)
 class UInteractionInterface : public UInterface
@@ -22,4 +23,11 @@ public:
     virtual void InteractWithMe(ANiceImmersiveCharacter* Pawn);
     virtual void ShowInteractionWidget();
     virtual void HideInteractionWidget();
+
+    ANiceImmersiveCharacter* PlayerCharacter = nullptr;
+    APlayerController* PawnController = nullptr;
+
+    float XCoord;
+    float YCoord;
+
 };

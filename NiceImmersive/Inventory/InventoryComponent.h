@@ -41,9 +41,4 @@ public:
 
     UPROPERTY(EditDefaultsOnly, Category = "Inventory")
     int32 InventorySize = 16;
-
-    TSubclassOf<APhysInteractActor> GetPhysActor() { return SpawnActor; }
-
-    UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "SpawnItemActor")
-    TSubclassOf<APhysInteractActor> SpawnActor;
 };

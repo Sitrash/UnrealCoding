@@ -4,6 +4,7 @@
 #include "Character/NiceImmersiveCharacter.h"
 #include "Inventory/InventoryComponent.h"
 #include "Inventory/InventoryUI/ChestWidget.h"
+#include "Components/ActionComponent.h"
 
 AChestInteract::AChestInteract()
 {
@@ -24,20 +25,25 @@ void AChestInteract::BeginPlay()
 
 void AChestInteract::InteractWithMe(ANiceImmersiveCharacter* Pawn)
 {
-    if (Pawn->IsShowingInventory) return;
+    const auto ActionComponent = Pawn->ActionComponent;
+    CharacterToInteract = Pawn;
+
+    if (ActionComponent->IsShowingInventory) return;
     if (WidgetIsOpened) return;
-    const auto ChestWidget = CreateWidget<UChestWidget>(GetWorld(), ChestWidgetClass);
+
+    const auto ChestWidget = CreateWidget<UChestWidget>(GetWorld(), ActionComponent->ChestWidgetClass);
     if (!ChestWidget) return;
     ChestWidget->ChestActor = this;
     ChestWidget->AddToViewport();
+
     WidgetIsOpened = true;
-    CharacterToInteract = Pawn;
-    CharacterToInteract->CanOpenInventory = false;
+    ActionComponent->CanOpenInventory = false;
 }
 
 void AChestInteract::AddRemoveItem(UItem* ItemRef)
 {
     const auto InventoryComp = CharacterToInteract->InventoryComponent;
     if (!InventoryComp) return;
-    if (InventoryComp->AddItem(ItemRef)) ChestInventoryComponent->RemoveChestItem(ItemRef);
+    // if (InventoryComp->AddItem(ItemRef)) ChestInventoryComponent->RemoveChestItem(ItemRef);
+    if (ChestInventoryComponent->RemoveItem(ItemRef)) InventoryComp->AddItem(ItemRef);
 }

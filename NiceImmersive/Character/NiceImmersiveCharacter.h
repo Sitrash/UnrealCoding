@@ -6,11 +6,9 @@
 #include "GameFramework/Character.h"
 #include "Components/ActorComponent.h"
 #include "GameFramework/Actor.h"
-#include "Blueprint/UserWidget.h"
 #include "Components/BoxComponent.h"
-#include "Interfaces/InteractionInterface.h"
-#include "GenericTeamAgentInterface.h"
-#include "Components/HealthComponent.h"
+#include "NiceImmersive/Interfaces/InteractionInterface.h"
+#include "NiceImmersive/Components/HealthComponent.h"
 #include "NiceImmersiveCharacter.generated.h"
 
 class UInputComponent;
@@ -25,12 +23,13 @@ class UHealthComponent;
 class UTextRenderComponent;
 class UWeaponComponent;
 class UInventoryComponent;
-class AChestInteract;
 class USoundCue;
-class UInventoryWidget;
+class UActionComponent;
+class UCameraShakeBase;
+class USpringArmComponent;
 
 UCLASS(Blueprintable, BlueprintType, config = Game)
-class ANiceImmersiveCharacter : public ACharacter, public IGenericTeamAgentInterface
+class ANiceImmersiveCharacter : public ACharacter
 {
     GENERATED_BODY()
 
@@ -52,9 +51,9 @@ public:
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Material")
     FName MaterialColorName = "Paint Color";
 
-    UCameraComponent* GetFirstPersonCameraComponent() const { return FirstPersonCameraComponent; }
+    UCameraComponent* GetFirstPersonCamera() const { return FirstPersonCameraComponent; }
 
-    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Inventory")
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Components")
     UInventoryComponent* InventoryComponent;
 
     UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Components")
@@ -63,19 +62,17 @@ public:
     UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Components")
     UWeaponComponent* WeaponComponent;
 
+    UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Components")
+    UActionComponent* ActionComponent;
+
     UBoxComponent* GetDragHand() { return DragHand; }
-    bool CanThrowing() { return CanThrow; }
-    void SetThrowing(bool b) { CanThrow = b; }
-    bool GetHolding() { return bHolding; }
-    void SubFuncForHolding(AActor* HoldingActor, bool IsHolding);
 
     UFUNCTION(BlueprintCallable, Category = "Movement")
     float GetMovementDirection() const;
 
     void SetPlayerColor(const FLinearColor& Color);
 
-    bool CanOpenInventory = true;
-    bool IsShowingInventory = false;
+    IInteractionInterface* Interface = nullptr;
 
 protected:
     virtual void SetupPlayerInputComponent(UInputComponent* InputComponent) override;
@@ -103,11 +100,8 @@ protected:
     UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Sound")
     USoundCue* DeathSound;
 
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Components")
-    TSubclassOf<UUserWidget> InventoryWidget;
-
-    void OnAction();
-    void OnFire();
+    UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "VFX")
+    TSubclassOf<UCameraShakeBase> WalkCameraShake;
 
     void MoveForward(float Val);
     void MoveRight(float Val);
@@ -125,14 +119,9 @@ protected:
     virtual void OnDeath();
 
 private:
-    IInteractionInterface* Interface = nullptr;
-
     bool WantsToRun = false;
     bool IsMovingForward = false;
     bool IsCrouch = false;
-
-    bool bHolding = false;
-    bool CanThrow = false;
 
     void OnHealthChanged(float Health, float HealthDelta);
 
@@ -141,11 +130,5 @@ private:
 
     void InteractionOverlapping();
 
-    UInventoryWidget* Widget = nullptr;
-
-    UFUNCTION(BlueprintCallable)
-    void OnInventoryShow();
-
-    float XCoord = 200.0f;
-    float YCoord = 200.0f;
+    APlayerController* CharController = nullptr;
 };

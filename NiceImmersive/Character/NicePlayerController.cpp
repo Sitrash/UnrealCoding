@@ -1,10 +1,10 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 #include "NicePlayerController.h"
-#include "Components/RespawnComponent.h"
-#include "GameMode/NiceImmersiveGameMode.h"
-#include "NiceImmersiveHUD.h"
-#include "GameMode/NiceGameInstance.h"
+#include "NiceImmersive/Components/RespawnComponent.h"
+#include "NiceImmersive/GameMode/NiceImmersiveGameMode.h"
+#include "NiceImmersive/UI/NiceImmersiveHUD.h"
+#include "NiceImmersive/GameMode/NiceGameInstance.h"
 #include "Blueprint/UserWidget.h"
 
 ANicePlayerController::ANicePlayerController()

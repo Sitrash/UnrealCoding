@@ -1,21 +1,24 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
-#include "Inventory/InventoryUI/ChestWidget.h"
-#include "Inventory/InventoryComponent.h"
-#include "Interactable/ChestInteract.h"
+#include "NiceImmersive/Inventory/InventoryUI/ChestWidget.h"
+#include "NiceImmersive/Inventory/InventoryComponent.h"
+#include "NiceImmersive/Interactable/ChestInteract.h"
 #include "Components/WrapBox.h"
-#include "Inventory/Items/Item.h"
+#include "NiceImmersive/Inventory/Items/Item.h"
 #include "ChestItemWidget.h"
 #include "Components/Button.h"
-#include "Character/NiceImmersiveCharacter.h"
+#include "NiceImmersive/Character/NiceImmersiveCharacter.h"
+#include "NiceImmersive/Components/ActionComponent.h"
+#include "Kismet/GameplayStatics.h"
 
 void UChestWidget::NativeOnInitialized()
 {
     Super::NativeOnInitialized();
 
-    GetOwningPlayer()->bShowMouseCursor = true;
-    GetOwningPlayer()->SetInputMode(FInputModeGameAndUI());
-    GetOwningPlayer()->SetMouseLocation(XCoord, YCoord);
+    PawnController->bShowMouseCursor = true;
+    PawnController->SetInputMode(FInputModeGameAndUI());
+    PawnController->SetMouseLocation(XCoord, YCoord);
+    InputAction.BindDynamic(this, &UChestWidget::CloseInventory);
 }
 
 void UChestWidget::NativeConstruct()
@@ -26,11 +29,14 @@ void UChestWidget::NativeConstruct()
 
     UpdateInventory();
 
-    InventoryReference->OnInventoryUpdated.AddDynamic(this, &ThisClass::UpdateInventory);
-    CloseButton->OnClicked.AddDynamic(this, &ThisClass::CloseInventory);
+    InventoryReference->OnInventoryUpdated.AddDynamic(this, &UChestWidget::UpdateInventory);
+    CloseButton->OnClicked.AddDynamic(this, &UChestWidget::CloseInventory);
 
     if (InventoryBox->GetAllChildren().Num() == 0)
-        GetOwningPlayer()->SetMouseLocation(800, 450);  // TODO: THIS SHIT IS MAGIC NUMBERS. NEED REDONE
+        PawnController->SetMouseLocation(800, 450);  // TODO: THIS SHIT IS MAGIC NUMBERS. NEED REDONE
+
+    UGameplayStatics::PlaySound2D(GetWorld(), OpenInventorySound);
+    ListenForInputAction(PauseGame, EInputEvent::IE_Pressed, true, InputAction);
 }
 
 void UChestWidget::UpdateInventory()
@@ -52,11 +58,12 @@ void UChestWidget::UpdateInventory()
 
 void UChestWidget::CloseInventory()
 {
-    GetOwningPlayer()->bShowMouseCursor = false;
-    GetOwningPlayer()->SetInputMode(FInputModeGameOnly());
+    PawnController->bShowMouseCursor = false;
+    PawnController->SetInputMode(FInputModeGameOnly());
     ChestActor->WidgetIsOpened = false;
-    ChestActor->CharacterToInteract->CanOpenInventory = true;
-    ChestActor->CharacterToInteract = nullptr;
+    PlayerCharacter->ActionComponent->CanOpenInventory = true;
+    //ChestActor->CharacterToInteract = nullptr;
     ChestActor = nullptr;
+    UGameplayStatics::PlaySound2D(GetWorld(), CloseInventorySound);
     RemoveFromParent();
 }

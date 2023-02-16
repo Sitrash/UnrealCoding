@@ -34,9 +34,6 @@ public:
     UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Inventory")
     UInventoryComponent* ChestInventoryComponent;
 
-    UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "ChestWidget")
-    TSubclassOf<UUserWidget> ChestWidgetClass;
-
     UFUNCTION(BlueprintCallable)
     void AddRemoveItem(UItem* ItemRef);
 

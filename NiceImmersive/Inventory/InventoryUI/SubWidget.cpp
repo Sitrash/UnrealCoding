@@ -1,8 +1,8 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
-#include "Inventory/InventoryUI/SubWidget.h"
+#include "NiceImmersive/Inventory/InventoryUI/SubWidget.h"
 #include "Blueprint/WidgetBlueprintLibrary.h"
-#include "Inventory/Items/Item.h"
+#include "NiceImmersive/Inventory/Items/Item.h"
 #include "Components/Button.h"
 
 void USubWidget::NativeOnInitialized()

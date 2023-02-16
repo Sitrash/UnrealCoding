@@ -47,9 +47,10 @@ protected:
     UFUNCTION()
     void OnUseItem();
 
-    UFUNCTION()
+    UFUNCTION(BlueprintCallable)
     void OnDropItem();
 
     virtual void NativeOnInitialized() override;
     virtual void NativeDestruct() override;
+    virtual void NativeOnMouseLeave(const FPointerEvent& InMouseEvent) override;
 };

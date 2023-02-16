@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "NiceImmersive/UI/BaseWidget.h"
 #include "Blueprint/UserWidget.h"
 #include "ChestWidget.generated.h"
 
@@ -11,9 +12,10 @@ class UChestItemWidget;
 class UInventoryComponent;
 class UButton;
 class AChestInteract;
+class USoundBase;
 
 UCLASS()
-class NICEIMMERSIVE_API UChestWidget : public UUserWidget
+class NICEIMMERSIVE_API UChestWidget : public UBaseWidget
 {
     GENERATED_BODY()
 
@@ -35,7 +37,18 @@ protected:
     UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "UI")
     TSubclassOf<UChestItemWidget> ItemWidgetClass;
 
+    UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "UI")
+    USoundBase* OpenInventorySound;
+
+    UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "UI")
+    USoundBase* CloseInventorySound;
+
+    UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "UI")
+    FName PauseGame;
+
     UInventoryComponent* InventoryReference;
+
+    FOnInputAction InputAction;
 
     virtual void NativeOnInitialized() override;
     virtual void NativeConstruct() override;
@@ -44,6 +57,6 @@ protected:
     void UpdateInventory();
 
 private:
-    float XCoord = 650.0f;
-    float YCoord = 300.0f;
+    //float XCoord = 650.0f;
+    //float YCoord = 300.0f;
 };

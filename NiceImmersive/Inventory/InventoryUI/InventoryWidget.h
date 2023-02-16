@@ -3,25 +3,28 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "NiceImmersive/UI/BaseWidget.h"
 #include "Blueprint/UserWidget.h"
 #include "InventoryWidget.generated.h"
 
 class UWrapBox;
 class UInventoryItemWidget;
 class UInventoryComponent;
+class USoundBase;
 
 UCLASS()
-class NICEIMMERSIVE_API UInventoryWidget : public UUserWidget
+class NICEIMMERSIVE_API UInventoryWidget : public UBaseWidget
 {
     GENERATED_BODY()
 
 public:
+    UFUNCTION(BlueprintCallable)
     void CloseInventory();
 
-protected:
     UPROPERTY(meta = (BindWidget))
     UWrapBox* InventoryBox;
 
+protected:
     UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "UI")
     TSubclassOf<UInventoryItemWidget> InventoryItemClass;
 
@@ -32,4 +35,15 @@ protected:
 
     UFUNCTION()
     void UpdateInventory();
+
+    FOnInputAction InputAction;
+
+    UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "UI")
+    FName PauseGame;
+
+    UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "UI")
+    USoundBase* OpenInventorySound;
+
+    UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "UI")
+    USoundBase* CloseInventorySound;
 };

@@ -5,8 +5,7 @@
 #include "GameFramework/Controller.h"
 #include "Engine/World.h"
 #include "TimerManager.h"
-#include "Camera/CameraShake.h"
-#include "GameMode/NiceImmersiveGameMode.h"
+#include "NiceImmersive/GameMode/NiceImmersiveGameMode.h"
 #include "Perception/AISense_Damage.h"
 #include "PhysicalMaterials/PhysicalMaterial.h"
 

@@ -29,12 +29,22 @@ void ARifleWeapon::StartFire()
     InitFX();
     GetWorldTimerManager().SetTimer(ShotTimerHandle, this, &ARifleWeapon::MakeShot, TimeBetweenShots, true);
     MakeShot();
+
+    ACharacter* Character = Cast<ACharacter>(GetOwner());
+    if (!Character) return;
+
+    if (!IsAmmoEmpty() && FireMontage) Character->GetMesh()->GetAnimInstance()->Montage_Play(FireMontage, 1.0f);
 }
 
 void ARifleWeapon::StopFire()
 {
     GetWorldTimerManager().ClearTimer(ShotTimerHandle);
     SetFXActive(false);
+
+    ACharacter* Character = Cast<ACharacter>(GetOwner());
+    if (!Character) return;
+
+    Character->GetMesh()->GetAnimInstance()->Montage_Stop(0.1f, FireMontage);
 }
 
 void ARifleWeapon::MakeShot()
@@ -102,7 +112,7 @@ void ARifleWeapon::InitFX()
 
     if (!FireAudioComponent)
     {
-        FireAudioComponent = UGameplayStatics::SpawnSoundAttached(FireSound, WeaponMesh, MuzzleSocketName);
+         FireAudioComponent = UGameplayStatics::SpawnSoundAttached(FireSound, WeaponMesh, MuzzleSocketName);
     }
 
     SetFXActive(true);

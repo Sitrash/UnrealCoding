@@ -30,14 +30,10 @@ void APhysInteractActor::BeginPlay()
 
 void APhysInteractActor::InteractWithMe(ANiceImmersiveCharacter* Pawn)
 {
-    if (Pawn)  //(const auto Pawn = Cast<ANiceImmersiveCharacter>(UGameplayStatics::GetPlayerCharacter(GetWorld(), 0)))
+    const auto InvComp = Pawn->FindComponentByClass<UInventoryComponent>();
+    
+    if (InvComp->AddItem(ItemData))
     {
-        if (const auto InvComp = Pawn->FindComponentByClass<UInventoryComponent>())
-        {
-            if (InvComp->AddItem(ItemData))
-            {
-                Destroy();
-            }
-        }
+        Destroy();
     }
 }

@@ -1,12 +1,11 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
-#include "Inventory/InventoryUI/ChestItemWidget.h"
+#include "NiceImmersive/Inventory/InventoryUI/ChestItemWidget.h"
 #include "Components/Button.h"
-#include "Inventory/Items/Item.h"
+#include "NiceImmersive/Inventory/Items/Item.h"
 #include "Components/Image.h"
 #include "Components/TextBlock.h"
-#include "Character/NiceImmersiveCharacter.h"
-#include "Interactable/ChestInteract.h"
+#include "NiceImmersive/Interactable/ChestInteract.h"
 #include "ChestWidget.h"
 
 void UChestItemWidget::NativeOnInitialized()

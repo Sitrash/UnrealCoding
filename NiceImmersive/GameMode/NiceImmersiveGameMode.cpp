@@ -71,7 +71,6 @@ void ANiceImmersiveGameMode::StartRound()
 
 void ANiceImmersiveGameMode::GameTimerUpdate()
 {
-
     if (--RoundCountDown == 0)
     {
         GetWorldTimerManager().ClearTimer(GameRoundTimerHandle);
