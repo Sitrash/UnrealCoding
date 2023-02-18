@@ -1,1 +1,1 @@
-Copyright © 2023 Roman Sitrash. All rights reserved.
+Copyright © 2023 Sitrash. All rights reserved.
